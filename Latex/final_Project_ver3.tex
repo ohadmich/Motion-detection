@@ -1,0 +1,148 @@
+\documentclass[a4paper]{article}
+
+%% Language and font encodings
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+
+%% Sets page size and margins
+\usepackage[a4paper,top=3cm,bottom=2.5cm,left=2cm,right=2.5cm,marginparwidth=1.75cm]{geometry}
+
+%% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{braket}
+\usepackage{gensymb}
+\usepackage{pdfpages}
+\usepackage{mathtools}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+%% Macros
+\newcommand{\rb}[1]{\left(#1\right)}
+\newcommand{\pd}[2]{\frac{\partial#1}{\partial#2}}
+\newcommand{\sqb}[1]{\left[#1\right]}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\av}[1]{\left<#1\right>}
+
+\title{Data Analysis - Project}
+\author{Lee Drori, Ran Finkelstein and Ohad Michel}
+
+\begin{document}
+	\maketitle
+	
+	\section{Statistical Model}
+	Our $H_0$ in real space is given by:
+	\begin{equation}
+	H_0 : N = F_n T * P_n + \alpha F_n \delta \rb{q} * P_n + \epsilon_n  
+	\end{equation}
+	Where hat stands for the real space functions and $*$ for convolution. On the other hand, $H_1$ is given by:
+	\begin{equation}
+	H_1 : N = F_n T * P_n + \alpha F_n \delta \rb{q + \Delta q} * P_n + \epsilon_n
+	\end{equation}
+	In both cases the Reference image is given by:
+	\begin{equation}
+	H_0,H_1 : R = F_r T * P_r + \alpha F_r \delta \rb{q} * P_r + \epsilon_r
+	\end{equation}
+	We will work mainly in Fourier space where the Hypothesis become:
+	\begin{equation}\label{Hypo}
+	\begin{cases}
+	H_0: & \hat{N} = F_n \hat{T} \cdot \hat{P_n} + \alpha F_n \exp\rb{-ikq}\cdot \hat{P_n} + \hat{\epsilon_n}\\
+	H_1: & \hat{N} = F_n \hat{T} \cdot \hat{P_n} + \alpha F_n \exp\rb{-ik\rb{q + \Delta q}}\cdot \hat{P_n} + \hat{\epsilon_n}\\
+	H_0,H_1: & \hat{R} = F_r \hat{T} \cdot \hat{P_r} + \alpha F_r \exp\rb{-ikq}\cdot \hat{P_r} + \hat{\epsilon_r}\\
+	\end{cases}
+	\end{equation}
+	From the last equation in \eqref{Hypo} we can find $\hat{T}$ as a function of $\hat{R}$:
+	\begin{equation}
+	\hat{T} = \frac{\hat{R} - \hat{\epsilon_r}}{F_r\cdot \hat{P_r}} -\alpha \exp\rb{-ikq}
+	\end{equation}
+	We substitute $\hat{T}$ in to $\hat{N}$ and find:
+	\begin{equation}
+	H_0,\hat{R} : \hat{N} = \frac{F_n \hat{R}\cdot \hat{P_n} - F_n \hat{\epsilon_r}\cdot \hat{P_n}}{F_r\cdot \hat{P_r}} + \hat{\epsilon_n}  
+	\end{equation}
+	And $H_1$ is given by:
+	\begin{equation}
+	\begin{split}
+	H_1,R : \hat{N} & = \frac{F_n \hat{R}\cdot \hat{P_n} - F_n \hat{\epsilon_r}\cdot \hat{P_n}}{F_r\cdot \hat{P_r}} + \alpha F_n \sqb{\exp\rb{-ik\rb{q + \Delta q}} - \exp\rb{-ikq}}\cdot \hat{P_n} + \hat{\epsilon_n}\\
+	& = \frac{F_n \hat{R}\cdot \hat{P_n} - F_n \hat{\epsilon_r}\cdot \hat{P_n}}{F_r\cdot \hat{P_r}} + \alpha F_n \exp\rb{-ikq} \sqb{\exp\rb{-ik\Delta q} - 1}\cdot \hat{P_n} + \hat{\epsilon_n}\\
+	\end{split}
+	\end{equation}
+	The most powerful statistic for deciding between two simple hypotheses is the likelihood ratio test:
+	\begin{equation}
+	\mathcal{L}\rb{q,\Delta q,\alpha} = \frac{\mathcal{P}\rb{N,R|H_1}}{\mathcal{P}\rb{N,R|H_0}}
+	\end{equation}
+	Using base theorem:
+	\begin{equation}
+	\mathcal{L}\rb{q,\Delta q,\alpha} = \frac{\mathcal{P}\rb{N|R,H_1}\cdot \mathcal{P}\rb{R|H_1}}{\mathcal{P}\rb{N|R,H_0}\cdot \mathcal{P}\rb{R|H_0}} = \frac{\mathcal{P}\rb{N|R,H_1}}{\mathcal{P}\rb{N|R,H_0}}
+	\end{equation}
+	Where we used the fact that $\mathcal{P}\rb{R|H_1} = \mathcal{P}\rb{R|H_0}$. First let's compute the log of the numerator:
+	\begin{equation}
+	\begin{split}
+	\log\rb{\mathcal{P}\rb{N|R,H_0}} & = \sum_k \frac{-\abs{\hat{N} - \frac{F_n \hat{R}\cdot \hat{P_n}}{F_r\cdot \hat{P_r}}}^2}{2V\rb{\hat{\epsilon_n} + \frac{F_n \hat{\epsilon_r}\cdot \hat{P_n}}{F_r\cdot \hat{P_r}}}}\\
+	& = \frac{1}{2}\sum_k \frac{-\abs{F_r \hat{N} \cdot \hat{P_r} - F_n \hat{R}\cdot \hat{P_n}}^2}{\sigma^2_n F_r^2 \abs{\hat{P_r}}^2 + \sigma^2_r F_n^2 \abs{\hat{P_n}}^2}\\
+	\end{split}
+	\end{equation}
+	For the denominator we find:
+	\begin{equation}
+	\begin{split}
+	\log\rb{\mathcal{P}\rb{N|R,H_1}} & = \sum_k \frac{-\abs{\hat{N} - \frac{F_n \hat{R}\cdot \hat{P_n}}{F_r\cdot \hat{P_r}} - \alpha F_n e^{-ikq} \sqb{\exp\rb{-ik\Delta q} - 1}\cdot \hat{P_n}}^2}{2V\rb{\hat{\epsilon_n} + \frac{F_n \hat{\epsilon_r}\cdot \hat{P_n}}{F_r\cdot \hat{P_r}}}}\\
+	& = \frac{1}{2}\sum_k \frac{-\abs{F_r \hat{N} \cdot \hat{P_r} - F_n \hat{R}\cdot \hat{P_n} - \alpha F_n F_r e^{-ikq} \sqb{\exp\rb{-ik\Delta q} - 1}\cdot \hat{P_n}\cdot \hat{P_r}}^2}{\sigma^2_n F_r^2 \abs{\hat{P_r}}^2 + \sigma^2_r F_n^2 \abs{\hat{P_n}}^2}\\
+	\end{split}
+	\end{equation}
+	We are now ready to compute $\log{\mathcal{L}\rb{q,\Delta q,\alpha}}$:
+	\begin{equation}
+	\begin{split}
+	\log{\mathcal{L}\rb{q,\Delta q,\alpha}} &= \log\rb{\mathcal{P}\rb{N|R,H_1}} - \log\rb{\mathcal{P}\rb{N|R,H_0}}\\
+	& = \frac{1}{2}\sum_k \sqb{- \frac{\abs{F_r \hat{N} \cdot \hat{P_r} - F_n \hat{R}\cdot \hat{P_n} - \alpha F_n F_r e^{-ikq}\sqb{\exp\rb{-ik\Delta q} - 1}\cdot \hat{P_n}\cdot \hat{P_r}}^2}{\sigma^2_n F_r^2 \abs{\hat{P_r}}^2 + \sigma^2_r F_n^2 \abs{\hat{P_n}}^2} + \frac{\abs{F_r \hat{N} \cdot \hat{P_r} - F_n \hat{R}\cdot \hat{P_n}}^2}{\sigma^2_n F_r^2 \abs{\hat{P_r}}^2 + \sigma^2_r F_n^2 \abs{\hat{P_n}}^2}}\\
+	& = \sum_k \frac{\mathcal{R}\sqb{\rb{F_r \hat{N} \cdot \hat{P_r} - F_n \hat{R}\cdot \hat{P_n}} \rb{\alpha F_n F_r e^{-ikq} \sqb{\exp\rb{-ik\Delta q} - 1}\cdot \hat{P_n}\cdot \hat{P_r}}^*}}{\sigma^2_n F_r^2 \abs{\hat{P_r}}^2 + \sigma^2_r F_n^2 \abs{\hat{P_n}}^2 }\\
+	\end{split}
+	\end{equation}
+	Where in the last step we used $\abs{a+b}^2 = \abs{a}^2 + \abs{b}^2 + 2\mathcal{R}\sqb{ab^*}$ for the first term in the square bracket. The $\abs{a}^2$ term is canceled by the second term in the square brackets and we disregarded $\abs{b}^2$.
+	Since $\alpha$ is a scalar multiplier we can define the sufficient statistic $S\rb{q,\Delta q}$:
+	\begin{equation}
+	\begin{split}
+	S\rb{q,\Delta q} \equiv \frac{\log{\mathcal{L}\rb{q,\Delta q,\alpha}}}{\alpha} & = \mathcal{R}\sqb{\sum_k e^{ikq} \frac{\rb{F_r \hat{N} \cdot \hat{P_r} - F_n \hat{R}\cdot \hat{P_n}} \rb{F_n F_r \sqb{\exp\rb{-ik\Delta q} - 1}\cdot \hat{P_n}\cdot \hat{P_r}}^*}{\sigma^2_n F_r^2 \abs{\hat{P_r}}^2 + \sigma^2_r F_n^2 \abs{\hat{P_n}}^2 }}\\
+	& = \mathcal{R}\sqb{\mathcal{F}^{-1}\sqb{\frac{\rb{F_r \hat{N} \cdot \hat{P_r} - F_n \hat{R}\cdot \hat{P_n}} \rb{F_n F_r \sqb{\exp\rb{-ik\Delta q} - 1}\cdot \hat{P_n}\cdot \hat{P_r}}^*}{\sigma^2_n F_r^2 \abs{\hat{P_r}}^2 + \sigma^2_r F_n^2 \abs{\hat{P_n}}^2 }}\rb{q}}
+	\end{split}
+	\end{equation}
+	We define:
+	\begin{equation}
+	\begin{split}
+	& \hat{D} = \frac{F_r \hat{N} \cdot \hat{P_r} - F_n \hat{R}\cdot \hat{P_n}}{\sqrt{\sigma^2_n F_r^2 \abs{\hat{P_r}}^2 + \sigma^2_r F_n^2 \abs{\hat{P_n}}^2}}\\
+	& \hat{P_D} = \frac{F_n F_r \hat{P_n}\cdot \hat{P_r}}{F_D \sqrt{\sigma^2_n F_r^2 \abs{\hat{P_r}}^2 + \sigma^2_r F_n^2 \abs{\hat{P_n}}^2}}\\
+	& F_D = \frac{F_n F_r}{\sqrt{F_n^2 \sigma_r^2 + F_r^2 \sigma_n^2}}\\
+	& \hat{M} \rb{\Delta q} = \exp\rb{-ik\Delta q} - 1\\
+	\end{split}
+	\end{equation}
+	Where $D$ is the proper subtraction image, $P_D$ is the PSF of this image and $F_D$ is its normalization factor. The matrix $M$ is the movement matrix which represent the difference in our transient position in Fourier representation. Using these notations we can write:
+	\begin{equation}
+	\begin{split}
+	S\rb{q,\Delta q} & = \mathcal{R}\sqb{\mathcal{F}^{-1}\sqb{F_D \hat{D} \cdot \hat{P_D}^* \cdot \hat{M}^*\rb{\Delta q}}\rb{q}}\\
+	& =\mathcal{R}\sqb{\mathcal{F}^{-1}\sqb{F_D \hat{D} \cdot \hat{P_D}^*}\rb{q + \Delta q} - \mathcal{F}^{-1}\sqb{F_D \hat{D} \cdot \hat{P_D}^*}\rb{q}}\\
+	\end{split}
+	\end{equation}
+	
+	\section{Expected performance of the statistics}
+	\textbf{Find proper threshold for detection}\\
+	We want to know the distribution of noise within model $H_0$. Each pixel is drawn from a Poisson distribution with variance $\lambda$ , for a large number of pixels this can be approximated as Gaussian noise. The optimal statistic  is some function of the difference image $D(k)$. Since the latter is some linear combination of the reference image R and new image N we can find its variance from the variance of the two images.
+	Here we use the fact that the variance in Fourier space is the number of pixels times the variance in real space.
+	\begin{equation}
+	Var\sqb{\hat{D}} = Var\sqb{\frac{F_r \hat{N} \cdot \hat{P_r} - F_n \hat{R}\cdot \hat{P_n}}{\sqrt{\sigma^2_n F_r^2 \abs{\hat{P_r}}^2 + \sigma^2_r F_n^2 \abs{\hat{P_n}}^2}}}=\frac{n^2\sigma^2_n F_r^2 \abs{\hat{P_r}}^2 + n^2\sigma^2_r F_n^2 \abs{\hat{P_n}}^2}{\sigma^2_n F_r^2 \abs{\hat{P_r}}^2 + \sigma^2_r F_n^2 \abs{\hat{P_n}}^2}=n^2
+	\end{equation}
+	
+	So the proper subtraction image under $H_0$ has zero mean and unity STD.
+	We now turn to the variance of the optimal statistic $S(q,\Delta q)$ under $H_0$. For a general displacement, $\hat{S}$ is again a subtraction of two Gaussian distributed variables which itself is a Gaussian distributed variable with variance:
+	\begin{equation}
+	Var\sqb{\hat{S}}=2F_D^2 n^2 \abs{\hat{P_D}}^2=\frac{2n^2 F_n^2 F_r^2 \abs{\hat{P_n}}^2\abs{\hat{P_r}}^2}{\sigma^2_n F_r^2 \abs{\hat{P_r}}^2 + \sigma^2_r F_n^2 \abs{\hat{P_n}}^2}\\ 
+	\end{equation}  
+    in the limit of $\sigma_r \rightarrow 0$:
+    \begin{equation}
+    Var\sqb{\hat{S}}=\frac{2n^2F^2_n\abs{\hat{P_n}}^2}{\sigma^2_n}
+    \end{equation}
+	\begin{equation}
+	\begin{split}
+	Var\sqb{S} & =\frac{1}{n^4} \sum_k Var\sqb{\hat{S}}=\frac{2F_n^2}{\sigma_n^2}\frac{1}{n^2}\sum_k\abs{P_n}^2=\frac{2F_n^2}{\sigma_n^2}\mathcal{F}^{-1}\sqb{\abs{\hat{P_n}}^2}(0)\\
+	& = \frac{2F_n^2}{\sigma_n^2}\mathcal{F}^{-1}\sqb{\hat{P_n}}(0)*\mathcal{F}^{-1}\sqb{\hat{P_n}^*}(0)\\
+	& = \frac{2F_n^2}{\sigma_n^2}\abs{P_n\rb{0}}^2 = \frac{2F_n^2}{\sigma_n^2}\cdot \frac{1}{2\pi \sigma_n^2} = \boxed{\frac{F_n^2}{\pi\sigma_n^4}}\\
+	\end{split}
+	\end{equation}
+\end{document}
